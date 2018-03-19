@@ -28,6 +28,8 @@ To configure Hoovflight you should use the Hoovflight-configurator GUI tool (Win
 
 https://github.com/hoovflight/hoovflight-configurator
 
+...but until that is fully created, please use the Betaflight configurator. 
+
 ## Contributing
 
 Contributions are welcome and encouraged.  You can contribute in many ways:
