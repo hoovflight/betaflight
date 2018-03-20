@@ -50,8 +50,8 @@ static const box_t boxes[CHECKBOX_ITEM_COUNT] = {
     { BOXBARO, "BARO", 3 },
     { BOXANTIGRAVITY, "ANTI GRAVITY", 4 },
     { BOXMAG, "MAG", 5 },
-    { BOXHEADFREE, "HEADFREE", 6 },
-    { BOXHEADADJ, "HEADADJ", 7 },
+    { BOXHOOVREVERSE, "HOOV REVERSE", 6 },
+    { BOXHOOVFLIP, "HOOV FLIP", 7 },
     { BOXCAMSTAB, "CAMSTAB", 8 },
     { BOXCAMTRIG, "CAMTRIG", 9 },
     { BOXGPSHOME, "GPS HOME", 10 },
@@ -79,7 +79,7 @@ static const box_t boxes[CHECKBOX_ITEM_COUNT] = {
     { BOXCAMERA1, "CAMERA CONTROL 1", 32},
     { BOXCAMERA2, "CAMERA CONTROL 2", 33},
     { BOXCAMERA3, "CAMERA CONTROL 3", 34 },
-    { BOXFLIPOVERAFTERCRASH, "FLIP OVER AFTER CRASH", 35 },
+    //{ BOXFLIPOVERAFTERCRASH, "FLIP OVER AFTER CRASH", 35 }, (removed)
     { BOXPREARM, "PREARM", 36 },
     { BOXBEEPGPSCOUNT, "BEEP GPS SATELLITE COUNT", 37 },
 //    { BOX3DONASWITCH, "3D ON A SWITCH", 38 }, (removed)
@@ -88,8 +88,6 @@ static const box_t boxes[CHECKBOX_ITEM_COUNT] = {
     { BOXUSER2, "USER2", 41 },
     { BOXUSER3, "USER3", 42 },
     { BOXUSER4, "USER4", 43 },
-    { BOXHOOVREVERSE, "HOOV REVERSE", 44 },
-    { BOXHOOVFLIP, "HOOV FLIP", 45 },
 };
 
 // mask of enabled IDs, calculated on startup based on enabled features. boxId_e is used as bit index
@@ -185,7 +183,6 @@ void initActiveBoxIds(void)
     BME(BOXFPVANGLEMIX);
 
     if (isMotorProtocolDshot()) {
-        BME(BOXFLIPOVERAFTERCRASH);
         BME(BOXHOOVREVERSE);
         BME(BOXHOOVFLIP);
     }

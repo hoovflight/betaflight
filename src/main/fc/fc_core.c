@@ -115,7 +115,6 @@ enum {
 #define DEBUG_RUNAWAY_TAKEOFF_FALSE 0
 #endif
 
-static bool flipOverAfterCrashMode = false;
 static bool hoovReverseMode = false;
 static bool hoovFlipMode = false;
 
@@ -206,12 +205,6 @@ void updateArmingStatus(void)
             setArmingDisabled(ARMING_DISABLED_THROTTLE);
         } else {
             unsetArmingDisabled(ARMING_DISABLED_THROTTLE);
-        }
-
-        if (!STATE(SMALL_ANGLE) && !IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
-            setArmingDisabled(ARMING_DISABLED_ANGLE);
-        } else {
-            unsetArmingDisabled(ARMING_DISABLED_ANGLE);
         }
 
         if (averageSystemLoadPercent > 100) {
@@ -664,13 +657,6 @@ bool processRx(timeUs_t currentTimeUs)
     }
 
     updateActivatedModes();
-
-#ifdef USE_DSHOT
-    /* Enable beep warning when the crash flip mode is active */
-    if (isMotorProtocolDshot() && isModeActivationConditionPresent(BOXFLIPOVERAFTERCRASH) && IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
-        beeper(BEEPER_CRASH_FLIP_MODE);
-    }
-#endif
 
     if (!cliMode) {
         updateAdjustmentStates();
