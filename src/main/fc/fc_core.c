@@ -117,12 +117,12 @@ enum {
 
 static bool hoovReverseMode = false;
 static bool hoovFlipMode = false;
+bool boardFlipped = false;
 
 static uint32_t disarmAt;     // Time of automatic disarm when "Don't spin the motors when armed" is enabled and auto_disarm_delay is nonzero
 
 bool isRXDataNew;
 static int lastArmingDisabledReason = 0;
-static bool boardFlipped = false;
 
 #ifdef USE_RUNAWAY_TAKEOFF
 static timeUs_t runawayTakeoffDeactivateUs = 0;
@@ -205,6 +205,12 @@ void updateArmingStatus(void)
             setArmingDisabled(ARMING_DISABLED_THROTTLE);
         } else {
             unsetArmingDisabled(ARMING_DISABLED_THROTTLE);
+        }
+
+        if (!STATE(SMALL_ANGLE)) {
+            setArmingDisabled(ARMING_DISABLED_ANGLE);
+        } else {
+            unsetArmingDisabled(ARMING_DISABLED_ANGLE);
         }
 
         if (averageSystemLoadPercent > 100) {
@@ -546,7 +552,6 @@ bool processRx(timeUs_t currentTimeUs)
     if (ARMING_FLAG(ARMED)
         && pidConfig()->runaway_takeoff_prevention
         && !runawayTakeoffCheckDisabled
-        && !flipOverAfterCrashMode
         && !runawayTakeoffTemporarilyDisabled
         && !STATE(FIXED_WING)) {
 
@@ -757,7 +762,6 @@ static void subTaskPidController(timeUs_t currentTimeUs)
         && !STATE(FIXED_WING)
         && pidConfig()->runaway_takeoff_prevention
         && !runawayTakeoffCheckDisabled
-        && !flipOverAfterCrashMode
         && !runawayTakeoffTemporarilyDisabled
         && (!feature(FEATURE_MOTOR_STOP) || isAirmodeActive() || (calculateThrottleStatus() != THROTTLE_LOW))) {
 
