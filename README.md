@@ -1,4 +1,5 @@
 # HOOVFLIGHT
+[![Build Status](https://travis-ci.org/hoovflight/hoovflight.svg?branch=master)](https://travis-ci.org/hoovflight/hoovflight)
 
 ---
 
@@ -28,7 +29,7 @@ To configure Hoovflight you should use the Hoovflight-configurator GUI tool (Win
 
 https://github.com/hoovflight/hoovflight-configurator
 
-...but until that is fully created, please use the Betaflight configurator. 
+...but until that is fully created, please use the Betaflight configurator.
 
 ## Contributing
 
