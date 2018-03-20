@@ -1,4 +1,5 @@
 # HOOVFLIGHT
+![hoovflight](https://github.com/hoovflight/hoovflight-configurator/blob/master/src/images/cf_logo_white.svg)
 [![Build Status](https://travis-ci.org/hoovflight/hoovflight.svg?branch=master)](https://travis-ci.org/hoovflight/hoovflight)
 
 ---
