@@ -20,10 +20,6 @@
 #include "common/time.h"
 #include "pg/pg.h"
 
-#if defined(USE_GPS) || defined(USE_MAG)
-extern int16_t magHold;
-#endif
-
 extern bool isRXDataNew;
 
 typedef struct throttleCorrectionConfig_s {
