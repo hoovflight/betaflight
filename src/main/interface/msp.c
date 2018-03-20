@@ -1414,12 +1414,6 @@ static mspResult_e mspProcessInCommand(uint8_t cmdMSP, sbuf_t *src)
         }
         break;
 
-#if defined(USE_GPS) || defined(USE_MAG)
-    case MSP_SET_HEADING:
-        magHold = sbufReadU16(src);
-        break;
-#endif
-
     case MSP_SET_RAW_RC:
 #ifdef USE_RX_MSP
         {

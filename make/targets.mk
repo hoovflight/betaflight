@@ -164,7 +164,7 @@ ifeq ($(filter $(TARGET),$(VALID_TARGETS)),)
 $(error Target '$(TARGET)' is not valid, must be one of $(VALID_TARGETS). Have you prepared a valid target.mk?)
 endif
 
-ifeq ($(filter $(TARGET),$(F1_TARGETS) $(F3_TARGETS) $(F4_TARGETS) $(F7_TARGETS) $(SITL_TARGETS)),)
+ifeq ($(filter $(TARGET),$(F1_TARGETS) $(F3_TARGETS) $(F4_TARGETS) $(F7_TARGETS)),)
 $(error Target '$(TARGET)' has not specified a valid STM group, must be one of F1, F3, F405, F411 or F7x5. Have you prepared a valid target.mk?)
 endif
 
@@ -176,9 +176,6 @@ TARGET_MCU := STM32F4
 
 else ifeq ($(TARGET),$(filter $(TARGET), $(F7_TARGETS)))
 TARGET_MCU := STM32F7
-
-else ifeq ($(TARGET),$(filter $(TARGET), $(SITL_TARGETS)))
-TARGET_MCU := SITL
 
 else ifeq ($(TARGET),$(filter $(TARGET), $(F1_TARGETS)))
 TARGET_MCU := STM32F1

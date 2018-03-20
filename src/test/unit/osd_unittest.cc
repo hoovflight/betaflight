@@ -118,7 +118,7 @@ void doTestArm(bool testEmpty = true)
 
     // then
     // arming alert displayed
-    displayPortTestBufferSubstring(12, 7, "ARMED");
+    displayPortTestBufferSubstring(12, 7, "IT'S GO TIME");
 
     // given
     // armed alert times out (0.5 seconds)
@@ -1017,7 +1017,4 @@ extern "C" {
 
     uint16_t getCoreTemperatureCelsius(void) { return simulationCoreTemperature; }
 
-    bool isFlipOverAfterCrashMode(void) {
-        return false;
-    }
 }

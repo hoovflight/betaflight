@@ -115,12 +115,9 @@ enum {
 #define DEBUG_RUNAWAY_TAKEOFF_FALSE 0
 #endif
 
-
-#if defined(USE_GPS) || defined(USE_MAG)
-int16_t magHold;
-#endif
-
-static bool flipOverAfterCrashMode = false;
+static bool hoovReverseMode = false;
+static bool hoovFlipMode = false;
+bool boardFlipped = false;
 
 static uint32_t disarmAt;     // Time of automatic disarm when "Don't spin the motors when armed" is enabled and auto_disarm_delay is nonzero
 
@@ -210,7 +207,7 @@ void updateArmingStatus(void)
             unsetArmingDisabled(ARMING_DISABLED_THROTTLE);
         }
 
-        if (!STATE(SMALL_ANGLE) && !IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
+        if (!STATE(SMALL_ANGLE)) {
             setArmingDisabled(ARMING_DISABLED_ANGLE);
         } else {
             unsetArmingDisabled(ARMING_DISABLED_ANGLE);
@@ -305,27 +302,50 @@ void tryArm(void)
             return;
         }
 #ifdef USE_DSHOT
-        if (isMotorProtocolDshot() && isModeActivationConditionPresent(BOXFLIPOVERAFTERCRASH)) {
-            pwmDisableMotors();
-            delay(1);
+    // Check for hoov reverse and flip modes
+    if (isMotorProtocolDshot() && (isModeActivationConditionPresent(BOXHOOVREVERSE) || isModeActivationConditionPresent(BOXHOOVFLIP))) {
+        pwmDisableMotors();
+        delay(1);
 
-            if (!IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
-                flipOverAfterCrashMode = false;
-                if (!feature(FEATURE_3D)) {
-                    pwmWriteDshotCommand(ALL_MOTORS, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_NORMAL);
-                }
-            } else {
-                flipOverAfterCrashMode = true;
-#ifdef USE_RUNAWAY_TAKEOFF
-                runawayTakeoffCheckDisabled = false;
-#endif
-                if (!feature(FEATURE_3D)) {
-                    pwmWriteDshotCommand(ALL_MOTORS, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_REVERSED);
+        if (!IS_RC_MODE_ACTIVE(BOXHOOVREVERSE) && !IS_RC_MODE_ACTIVE(BOXHOOVFLIP)) {
+            hoovReverseMode = false;
+            hoovFlipMode = false;
+            if (!feature(FEATURE_3D)) {
+                pwmWriteDshotCommand(ALL_MOTORS, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_NORMAL);
+                if(boardFlipped){
+                    boardAlignmentMutable()->pitchDegrees += 180;
+                    initBoardAlignment(boardAlignment());
+                    boardFlipped = false;
                 }
             }
-
-            pwmEnableMotors();
+        } else if (IS_RC_MODE_ACTIVE(BOXHOOVREVERSE) && !IS_RC_MODE_ACTIVE(BOXHOOVFLIP)) {
+            hoovReverseMode = true;
+            hoovFlipMode = false;
+            if (!feature(FEATURE_3D)) {
+                // Only reverse the back two motors, not the motor in the hole
+                pwmWriteDshotCommand(1, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_REVERSED);
+                pwmWriteDshotCommand(2, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_REVERSED);
+                if(!boardFlipped){
+                    boardAlignmentMutable()->pitchDegrees -= 180;
+                    initBoardAlignment(boardAlignment());
+                    boardFlipped = true;
+                }
+            }
+        } else if (!IS_RC_MODE_ACTIVE(BOXHOOVREVERSE) && IS_RC_MODE_ACTIVE(BOXHOOVFLIP)){
+            hoovReverseMode = false;
+            hoovFlipMode = true;
+            if (!feature(FEATURE_3D)) {
+                // Only reverse the back two motors, not the motor in the hole
+                pwmWriteDshotCommand(0, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_REVERSED);
+                if(boardFlipped){
+                    boardAlignmentMutable()->pitchDegrees += 180;
+                    initBoardAlignment(boardAlignment());
+                    boardFlipped = false;
+                }
+            }
         }
+        pwmEnableMotors();
+    }
 #endif
 
         ENABLE_ARMING_FLAG(ARMED);
@@ -406,23 +426,6 @@ static void updateInflightCalibrationState(void)
         AccInflightCalibrationSavetoEEProm = true;
     }
 }
-
-#if defined(USE_GPS) || defined(USE_MAG)
-void updateMagHold(void)
-{
-    if (ABS(rcCommand[YAW]) < 15 && FLIGHT_MODE(MAG_MODE)) {
-        int16_t dif = DECIDEGREES_TO_DEGREES(attitude.values.yaw) - magHold;
-        if (dif <= -180)
-            dif += 360;
-        if (dif >= +180)
-            dif -= 360;
-        dif *= -GET_DIRECTION(rcControlsConfig()->yaw_control_reversed);
-        if (STATE(SMALL_ANGLE))
-            rcCommand[YAW] -= dif * currentPidProfile->pid[PID_MAG].P / 30;    // 18 deg
-    } else
-        magHold = DECIDEGREES_TO_DEGREES(attitude.values.yaw);
-}
-#endif
 
 #ifdef USE_VTX_CONTROL
 static bool canUpdateVTX(void)
@@ -549,7 +552,6 @@ bool processRx(timeUs_t currentTimeUs)
     if (ARMING_FLAG(ARMED)
         && pidConfig()->runaway_takeoff_prevention
         && !runawayTakeoffCheckDisabled
-        && !flipOverAfterCrashMode
         && !runawayTakeoffTemporarilyDisabled
         && !STATE(FIXED_WING)) {
 
@@ -566,7 +568,7 @@ bool processRx(timeUs_t currentTimeUs)
                 && (fabsf(axisPIDSum[FD_PITCH]) < RUNAWAY_TAKEOFF_DEACTIVATE_PIDSUM_LIMIT)
                 && (fabsf(axisPIDSum[FD_ROLL]) < RUNAWAY_TAKEOFF_DEACTIVATE_PIDSUM_LIMIT)
                 && (fabsf(axisPIDSum[FD_YAW]) < RUNAWAY_TAKEOFF_DEACTIVATE_PIDSUM_LIMIT)) {
-                
+
                 inStableFlight = true;
                 if (runawayTakeoffDeactivateUs == 0) {
                     runawayTakeoffDeactivateUs = currentTimeUs;
@@ -661,13 +663,6 @@ bool processRx(timeUs_t currentTimeUs)
 
     updateActivatedModes();
 
-#ifdef USE_DSHOT
-    /* Enable beep warning when the crash flip mode is active */
-    if (isMotorProtocolDshot() && isModeActivationConditionPresent(BOXFLIPOVERAFTERCRASH) && IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
-        beeper(BEEPER_CRASH_FLIP_MODE);
-    }
-#endif
-
     if (!cliMode) {
         updateAdjustmentStates();
         processRcAdjustments(currentControlRateProfile);
@@ -709,33 +704,6 @@ bool processRx(timeUs_t currentTimeUs)
     if (!IS_RC_MODE_ACTIVE(BOXPREARM) && ARMING_FLAG(WAS_ARMED_WITH_PREARM)) {
         DISABLE_ARMING_FLAG(WAS_ARMED_WITH_PREARM);
     }
-
-#if defined(USE_ACC) || defined(USE_MAG)
-    if (sensors(SENSOR_ACC) || sensors(SENSOR_MAG)) {
-#if defined(USE_GPS) || defined(USE_MAG)
-        if (IS_RC_MODE_ACTIVE(BOXMAG)) {
-            if (!FLIGHT_MODE(MAG_MODE)) {
-                ENABLE_FLIGHT_MODE(MAG_MODE);
-                magHold = DECIDEGREES_TO_DEGREES(attitude.values.yaw);
-            }
-        } else {
-            DISABLE_FLIGHT_MODE(MAG_MODE);
-        }
-#endif
-        if (IS_RC_MODE_ACTIVE(BOXHEADFREE)) {
-            if (!FLIGHT_MODE(HEADFREE_MODE)) {
-                ENABLE_FLIGHT_MODE(HEADFREE_MODE);
-            }
-        } else {
-            DISABLE_FLIGHT_MODE(HEADFREE_MODE);
-        }
-        if (IS_RC_MODE_ACTIVE(BOXHEADADJ)) {
-            if (imuQuaternionHeadfreeOffsetSet()){
-               beeper(BEEPER_RX_SET);
-            }
-        }
-    }
-#endif
 
 #ifdef USE_NAV
     if (sensors(SENSOR_GPS)) {
@@ -794,7 +762,6 @@ static void subTaskPidController(timeUs_t currentTimeUs)
         && !STATE(FIXED_WING)
         && pidConfig()->runaway_takeoff_prevention
         && !runawayTakeoffCheckDisabled
-        && !flipOverAfterCrashMode
         && !runawayTakeoffTemporarilyDisabled
         && (!feature(FEATURE_MOTOR_STOP) || isAirmodeActive() || (calculateThrottleStatus() != THROTTLE_LOW))) {
 
@@ -833,22 +800,6 @@ static void subTaskMainSubprocesses(timeUs_t currentTimeUs)
     if (feature(FEATURE_TELEMETRY)) {
         gyroReadTemperature();
     }
-
-#ifdef USE_MAG
-    if (sensors(SENSOR_MAG)) {
-        updateMagHold();
-    }
-#endif
-
-#if defined(USE_ALT_HOLD)
-    // updateRcCommands sets rcCommand, which is needed by updateAltHoldState and updateSonarAltHoldState
-    updateRcCommands();
-    if (sensors(SENSOR_BARO) || sensors(SENSOR_RANGEFINDER)) {
-        if (FLIGHT_MODE(BARO_MODE) || FLIGHT_MODE(RANGEFINDER_MODE)) {
-            applyAltHold();
-        }
-    }
-#endif
 
     // If we're armed, at minimum throttle, and we do arming via the
     // sticks, do not process yaw input from the rx.  We do this so the
@@ -955,8 +906,10 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
     }
 }
 
+bool isHoovReverseMode(void) {
+    return hoovReverseMode;
+}
 
-bool isFlipOverAfterCrashMode(void)
-{
-    return flipOverAfterCrashMode;
+bool isHoovFlipMode(void) {
+    return hoovFlipMode;
 }
