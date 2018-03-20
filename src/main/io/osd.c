@@ -528,8 +528,8 @@ static bool osdDrawSingleElement(uint8_t item)
                     buff[i] = toupper((unsigned char)pilotConfig()->name[i]);
                 } else {
                     break;
-                }    
-            }    
+                }
+            }
             buff[i] = '\0';
         }
 
@@ -633,13 +633,6 @@ static bool osdDrawSingleElement(uint8_t item)
 
             if (enabledWarnings & OSD_WARNING_BATTERY_CRITICAL && batteryState == BATTERY_CRITICAL) {
                 osdFormatMessage(buff, OSD_FORMAT_MESSAGE_BUFFER_SIZE, " LAND NOW");
-                break;
-            }
-
-            // Warn when in flip over after crash mode
-            if ((enabledWarnings & OSD_WARNING_CRASH_FLIP)
-                  && (isFlipOverAfterCrashMode())) {
-                osdFormatMessage(buff, OSD_FORMAT_MESSAGE_BUFFER_SIZE, "CRASH FLIP");
                 break;
             }
 
@@ -1230,7 +1223,8 @@ static void osdShowStats(void)
 static void osdShowArmed(void)
 {
     displayClearScreen(osdDisplayPort);
-    displayWrite(osdDisplayPort, 12, 7, "ARMED");
+    osdDrawLogo(3,1);
+    displayWrite(osdDisplayPort, 12, 4, "IT'S GO TIME");
 }
 
 STATIC_UNIT_TESTED void osdRefresh(timeUs_t currentTimeUs)

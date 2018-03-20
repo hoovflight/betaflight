@@ -47,6 +47,7 @@ void updateArmingStatus(void);
 void updateRcCommands(void);
 
 void taskMainPidLoop(timeUs_t currentTimeUs);
-bool isFlipOverAfterCrashMode(void);
+bool isHoovReverseMode(void);
+bool isHoovFlipMode(void);
 
 void runawayTakeoffTemporaryDisable(uint8_t disableFlag);

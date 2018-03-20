@@ -88,6 +88,8 @@ static const box_t boxes[CHECKBOX_ITEM_COUNT] = {
     { BOXUSER2, "USER2", 41 },
     { BOXUSER3, "USER3", 42 },
     { BOXUSER4, "USER4", 43 },
+    { BOXHOOVREVERSE, "HOOV REVERSE", 44 },
+    { BOXHOOVFLIP, "HOOV FLIP", 45 },
 };
 
 // mask of enabled IDs, calculated on startup based on enabled features. boxId_e is used as bit index
@@ -159,47 +161,6 @@ void initActiveBoxIds(void)
 #define BME(boxId) do { bitArraySet(&ena, boxId); } while (0)
     BME(BOXARM);
     BME(BOXPREARM);
-    if (!feature(FEATURE_AIRMODE)) {
-        BME(BOXAIRMODE);
-    }
-
-    if (!feature(FEATURE_ANTI_GRAVITY)) {
-        BME(BOXANTIGRAVITY);
-    }
-
-    if (sensors(SENSOR_ACC)) {
-        BME(BOXANGLE);
-        BME(BOXHORIZON);
-        BME(BOXHEADFREE);
-        BME(BOXHEADADJ);
-    }
-
-#ifdef USE_BARO
-    if (sensors(SENSOR_BARO)) {
-        BME(BOXBARO);
-    }
-#endif
-
-#ifdef USE_MAG
-    if (sensors(SENSOR_MAG)) {
-        BME(BOXMAG);
-    }
-#endif
-
-#ifdef USE_GPS
-    if (feature(FEATURE_GPS)) {
-        BME(BOXGPSHOME);
-        BME(BOXGPSHOLD);
-        BME(BOXBEEPGPSCOUNT);
-    }
-#endif
-
-#ifdef USE_RANGEFINDER
-    if (feature(FEATURE_RANGEFINDER)) { // XXX && sensors(SENSOR_RANGEFINDER)?
-        BME(BOXRANGEFINDER);
-    }
-#endif
-
     BME(BOXFAILSAFE);
 
     if (mixerConfig()->mixerMode == MIXER_FLYING_WING || mixerConfig()->mixerMode == MIXER_AIRPLANE || mixerConfig()->mixerMode == MIXER_CUSTOM_AIRPLANE) {
@@ -223,20 +184,14 @@ void initActiveBoxIds(void)
 
     BME(BOXFPVANGLEMIX);
 
-    if (feature(FEATURE_3D)) {
-        BME(BOX3D);
-    }
-
     if (isMotorProtocolDshot()) {
         BME(BOXFLIPOVERAFTERCRASH);
+        BME(BOXHOOVREVERSE);
+        BME(BOXHOOVFLIP);
     }
 
     if (feature(FEATURE_SERVO_TILT)) {
         BME(BOXCAMSTAB);
-    }
-
-    if (feature(FEATURE_INFLIGHT_ACC_CAL)) {
-        BME(BOXCALIB);
     }
 
     BME(BOXOSD);

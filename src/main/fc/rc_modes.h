@@ -72,6 +72,8 @@ typedef enum {
     BOXUSER2,
     BOXUSER3,
     BOXUSER4,
+    BOXHOOVREVERSE,
+    BOXHOOVFLIP,
     CHECKBOX_ITEM_COUNT
 } boxId_e;
 
