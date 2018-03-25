@@ -351,6 +351,7 @@ void tryArm(void)
                 hoovFlipMode = false;
                 if (!feature(FEATURE_3D)) {
                     // Only reverse the back two motors, not the motor in the hole
+                    pwmWriteDshotCommand(0, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_NORMAL);
                     pwmWriteDshotCommand(1, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_REVERSED);
                     pwmWriteDshotCommand(2, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_REVERSED);
                     if(!boardFlipped){
