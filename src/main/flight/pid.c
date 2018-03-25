@@ -89,9 +89,9 @@ void resetPidProfile(pidProfile_t *pidProfile)
 {
     RESET_CONFIG(pidProfile_t, pidProfile,
         .pid = {
-            [PID_ROLL] =  { 30, 20, 15 },
-            [PID_PITCH] = { 0, 0, 0 },      // No pitch needed
-            [PID_YAW] =   { 0, 0, 0 },      // No yaw needed
+            [PID_ROLL] =  { 40, 40, 30 },
+            [PID_PITCH] = { 0, 0, 0 },
+            [PID_YAW] =   { 0, 0, 0 },
             [PID_ALT] =   { 50, 0, 0 },
             [PID_POS] =   { 15, 0, 0 },     // POSHOLD_P * 100, POSHOLD_I * 100,
             [PID_POSR] =  { 34, 14, 53 },   // POSHOLD_RATE_P * 10, POSHOLD_RATE_I * 100, POSHOLD_RATE_D * 1000,

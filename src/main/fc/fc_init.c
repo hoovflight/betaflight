@@ -227,7 +227,7 @@ void spiPreInit(void)
 #ifdef MAX7456_SPI_CS_PIN
     spiPreInitCsOutPU(IO_TAG(MAX7456_SPI_CS_PIN)); // XXX 3.2 workaround for Kakute F4. See comment for spiPreInitCSOutPU.
 #endif
-#ifdef USE_SDCARD
+#ifdef USE_SDCARD 
     spiPreInitCs(sdcardConfig()->chipSelectTag);
 #endif
 #ifdef BMP280_CS_PIN
@@ -422,7 +422,7 @@ void init(void)
     beeperInit(beeperDevConfig());
 #endif
 /* temp until PGs are implemented. */
-#if defined(USE_INVERTER)
+#if defined(USE_INVERTER) && !defined(SITL)
     initInverters(serialPinConfig());
 #endif
 

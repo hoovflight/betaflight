@@ -79,7 +79,7 @@ static const box_t boxes[CHECKBOX_ITEM_COUNT] = {
     { BOXCAMERA1, "CAMERA CONTROL 1", 32},
     { BOXCAMERA2, "CAMERA CONTROL 2", 33},
     { BOXCAMERA3, "CAMERA CONTROL 3", 34 },
-    //{ BOXFLIPOVERAFTERCRASH, "FLIP OVER AFTER CRASH", 35 }, (removed)
+    { BOXFLIPOVERAFTERCRASH, "FLIP OVER AFTER CRASH", 35 },
     { BOXPREARM, "PREARM", 36 },
     { BOXBEEPGPSCOUNT, "BEEP GPS SATELLITE COUNT", 37 },
 //    { BOX3DONASWITCH, "3D ON A SWITCH", 38 }, (removed)
@@ -88,6 +88,8 @@ static const box_t boxes[CHECKBOX_ITEM_COUNT] = {
     { BOXUSER2, "USER2", 41 },
     { BOXUSER3, "USER3", 42 },
     { BOXUSER4, "USER4", 43 },
+    { BOXHOOVREVERSE, "HOOV REVERSE", 44 },
+    { BOXHOOVFLIP, "HOOV FLIP", 45 },
 };
 
 // mask of enabled IDs, calculated on startup based on enabled features. boxId_e is used as bit index
@@ -159,6 +161,10 @@ void initActiveBoxIds(void)
 #define BME(boxId) do { bitArraySet(&ena, boxId); } while (0)
     BME(BOXARM);
     BME(BOXPREARM);
+    if (!feature(FEATURE_AIRMODE)) {
+        BME(BOXAIRMODE);
+    }
+
     BME(BOXFAILSAFE);
 
     if (mixerConfig()->mixerMode == MIXER_FLYING_WING || mixerConfig()->mixerMode == MIXER_AIRPLANE || mixerConfig()->mixerMode == MIXER_CUSTOM_AIRPLANE) {
@@ -180,15 +186,9 @@ void initActiveBoxIds(void)
 #endif
 #endif
 
-    BME(BOXFPVANGLEMIX);
-
     if (isMotorProtocolDshot()) {
         BME(BOXHOOVREVERSE);
         BME(BOXHOOVFLIP);
-    }
-
-    if (feature(FEATURE_SERVO_TILT)) {
-        BME(BOXCAMSTAB);
     }
 
     BME(BOXOSD);
@@ -199,44 +199,8 @@ void initActiveBoxIds(void)
     }
 #endif
 
-#ifdef USE_SERVOS
-    if (mixerConfig()->mixerMode == MIXER_CUSTOM_AIRPLANE) {
-        BME(BOXSERVO1);
-        BME(BOXSERVO2);
-        BME(BOXSERVO3);
-    }
-#endif
-
-#ifdef USE_RCDEVICE
-    BME(BOXCAMERA1);
-    BME(BOXCAMERA2);
-    BME(BOXCAMERA3);
-#endif
-
 #if defined(USE_VTX_SMARTAUDIO) || defined(USE_VTX_TRAMP)
     BME(BOXVTXPITMODE);
-#endif
-
-#ifdef USE_PINIOBOX
-    // Turn BOXUSERx only if pinioBox facility monitors them, as the facility is the only BOXUSERx observer.
-    // Note that pinioBoxConfig can be set to monitor any box.
-    for (int i = 0; i < PINIO_COUNT; i++) {
-        if (pinioBoxConfig()->permanentId[i] != PERMANENT_ID_NONE) {
-            const box_t *box = findBoxByPermanentId(pinioBoxConfig()->permanentId[i]);
-            if (box) {
-                switch(box->boxId) {
-                case BOXUSER1:
-                case BOXUSER2:
-                case BOXUSER3:
-                case BOXUSER4:
-                    BME(box->boxId);
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-    }
 #endif
 
 #undef BME

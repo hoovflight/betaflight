@@ -249,16 +249,16 @@ void navNewGpsData(void)
             // Tail control
             if (navigationConfig()->nav_controls_heading) {
                 if (NAV_TAIL_FIRST) {
-                    //magHold = wrap_18000(nav_bearing - 18000) / 100;
+                    magHold = wrap_18000(nav_bearing - 18000) / 100;
                 } else {
-                    //magHold = nav_bearing / 100;
+                    magHold = nav_bearing / 100;
                 }
             }
             // Are we there yet ?(within x meters of the destination)
             if ((wp_distance <= navigationConfig()->gps_wp_radius) || check_missed_wp()) {      // if yes switch to poshold mode
                 nav_mode = NAV_MODE_POSHOLD;
                 if (NAV_SET_TAKEOFF_HEADING) {
-                    //magHold = nav_takeoff_bearing;
+                    magHold = nav_takeoff_bearing;
                 }
             }
             break;
