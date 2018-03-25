@@ -28,7 +28,6 @@
 #elif defined(REVOLT)
 #define TARGET_BOARD_IDENTIFIER "RVLT"
 #define USBD_PRODUCT_STRING     "Revolt"
-#define TARGET_DEFAULT_MIXER    MIXER_QUADX_1234
 
 #elif defined(SOULF4)
 #define TARGET_BOARD_IDENTIFIER "SOUL"
@@ -75,6 +74,7 @@
 
 #if defined(REVOLT)
 #define ENABLE_DSHOT_DMAR       true
+#define USE_TARGET_CONFIG
 #endif
 
 // PC0 used as inverter select GPIO
