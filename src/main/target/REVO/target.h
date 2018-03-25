@@ -28,7 +28,6 @@
 #elif defined(REVOLT)
 #define TARGET_BOARD_IDENTIFIER "RVLT"
 #define USBD_PRODUCT_STRING     "Revolt"
-#define USE_TARGET_CONFIG
 
 #elif defined(SOULF4)
 #define TARGET_BOARD_IDENTIFIER "SOUL"
