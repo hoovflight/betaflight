@@ -1017,4 +1017,7 @@ extern "C" {
 
     uint16_t getCoreTemperatureCelsius(void) { return simulationCoreTemperature; }
 
+    bool isFlipOverAfterCrashMode(void) {
+        return false;
+    }
 }
