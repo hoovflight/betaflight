@@ -629,6 +629,7 @@ static void applyMixToMotors(float motorMix[MAX_SUPPORTED_MOTORS])
     // Now add in the desired throttle, but keep in a range that doesn't clip adjusted
     // roll/pitch/yaw. This could move throttle down, but also up for those low throttle flips.
     int countStart;
+    pidProfile_t *pidProfile = pidProfilesMutable(0);
 
     if(isHoovReverseMode()){
         countStart = 1;
@@ -658,13 +659,11 @@ static void applyMixToMotors(float motorMix[MAX_SUPPORTED_MOTORS])
 
         // If we are in the reverse mode, then set the hover motor to 40%
         if(isHoovReverseMode()){
-            motor[0] = disarmMotorOutput + (motorRangeMax * 0.4);
+            motor[0] = disarmMotorOutput + (motorRangeMax * pidProfile->pid[PID_PITCH].P/100);
         }
 
         //This sets the front motor to a set value
         float percentThro = (rcCommand[THROTTLE]-1000)/1000 ;//Get the stick defelction for throttle amd convert it to a decimal of maximum possible throttle
-
-        pidProfile_t *pidProfile = pidProfilesMutable(0);
 
         if (percentThro > .25) { //If the thortle is greater than 25 percent
             motor[0] = disarmMotorOutput + (motorRangeMax * pidProfile->pid[PID_PITCH].P/100); //turn the motor 40%
@@ -674,14 +673,12 @@ static void applyMixToMotors(float motorMix[MAX_SUPPORTED_MOTORS])
         //     motor[0] = disarmMotorOutput + (motorRangeMax * 0); //turn the front motor off
         // }
 
-
-
         motor[i] = motorOutput;
 
         // If we are in flip mode, set hover motor to 100%, disarm the back motors
         if(isHoovFlipMode() && (i == 1 || i == 2)){
             motor[i] = motor_disarmed[i];
-            motor[0] = disarmMotorOutput + (motorRangeMax * 1.0);
+            motor[0] = disarmMotorOutput + (motorRangeMax * pidProfile->pid[PID_PITCH].I/100);
         }
     }
 
