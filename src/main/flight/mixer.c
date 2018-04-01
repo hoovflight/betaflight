@@ -663,12 +663,15 @@ static void applyMixToMotors(float motorMix[MAX_SUPPORTED_MOTORS])
 
         //My stuff
         //  float stickDeflectionThroAbs = rcData[THROTTLE] //getRcDeflectionAbs(FD_THRO); //Get the stick defelction for throttle
-        float percentThro = (2000-rcData[THROTTLE])/1000 //Get the stick defelction for throttle amd convert it to a decimal of maximum possible throttle
+        float percentThro = (rcCommand[THROTTLE]-1000)/1000 ;//Get the stick defelction for throttle amd convert it to a decimal of maximum possible throttle
 
         if (percentThro > .25) { //If the thortle is greater than 25 percent
-            motor[0] = disarmMotorOutput + (motorRangeMax * 0.25); //turn the motor 25%
+            motor[0] = disarmMotorOutput + (motorRangeMax * .4); //turn the motor 25%
         }
 
+        if (percentThro < .10) { //If the thortle is greater than 25 percent
+            motor[0] = disarmMotorOutput + (motorRangeMax * 0); //turn the motor 25%
+        }
         //end of my stuff
 
         motor[i] = motorOutput;
