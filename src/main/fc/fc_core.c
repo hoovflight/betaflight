@@ -123,8 +123,6 @@ bool boardFlipped = false;
 int16_t magHold;
 #endif
 
-static bool flipOverAfterCrashMode = false;
-
 static uint32_t disarmAt;     // Time of automatic disarm when "Don't spin the motors when armed" is enabled and auto_disarm_delay is nonzero
 
 bool isRXDataNew;
@@ -213,7 +211,7 @@ void updateArmingStatus(void)
             unsetArmingDisabled(ARMING_DISABLED_THROTTLE);
         }
 
-        if (!STATE(SMALL_ANGLE) && !IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
+        if (!STATE(SMALL_ANGLE)) {
             setArmingDisabled(ARMING_DISABLED_ANGLE);
         } else {
             unsetArmingDisabled(ARMING_DISABLED_ANGLE);
@@ -308,28 +306,6 @@ void tryArm(void)
             return;
         }
 #ifdef USE_DSHOT
-        if (isMotorProtocolDshot() && isModeActivationConditionPresent(BOXFLIPOVERAFTERCRASH)) {
-            pwmDisableMotors();
-            delay(1);
-
-            if (!IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
-                flipOverAfterCrashMode = false;
-                if (!feature(FEATURE_3D)) {
-                    pwmWriteDshotCommand(ALL_MOTORS, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_NORMAL);
-                }
-            } else {
-                flipOverAfterCrashMode = true;
-#ifdef USE_RUNAWAY_TAKEOFF
-                runawayTakeoffCheckDisabled = false;
-#endif
-                if (!feature(FEATURE_3D)) {
-                    pwmWriteDshotCommand(ALL_MOTORS, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_REVERSED);
-                }
-            }
-
-            pwmEnableMotors();
-        }
-
         // Check for hoov reverse and flip modes
         if (isMotorProtocolDshot() && (isModeActivationConditionPresent(BOXHOOVREVERSE) || isModeActivationConditionPresent(BOXHOOVFLIP))) {
             pwmDisableMotors();
@@ -601,7 +577,6 @@ bool processRx(timeUs_t currentTimeUs)
     if (ARMING_FLAG(ARMED)
         && pidConfig()->runaway_takeoff_prevention
         && !runawayTakeoffCheckDisabled
-        && !flipOverAfterCrashMode
         && !runawayTakeoffTemporarilyDisabled
         && !STATE(FIXED_WING)) {
 
@@ -712,13 +687,6 @@ bool processRx(timeUs_t currentTimeUs)
     }
 
     updateActivatedModes();
-
-#ifdef USE_DSHOT
-    /* Enable beep warning when the crash flip mode is active */
-    if (isMotorProtocolDshot() && isModeActivationConditionPresent(BOXFLIPOVERAFTERCRASH) && IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
-        beeper(BEEPER_CRASH_FLIP_MODE);
-    }
-#endif
 
     if (!cliMode) {
         updateAdjustmentStates();
@@ -846,7 +814,6 @@ static void subTaskPidController(timeUs_t currentTimeUs)
         && !STATE(FIXED_WING)
         && pidConfig()->runaway_takeoff_prevention
         && !runawayTakeoffCheckDisabled
-        && !flipOverAfterCrashMode
         && !runawayTakeoffTemporarilyDisabled
         && (!feature(FEATURE_MOTOR_STOP) || isAirmodeActive() || (calculateThrottleStatus() != THROTTLE_LOW))) {
 
@@ -1007,11 +974,6 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
     }
 }
 
-
-bool isFlipOverAfterCrashMode(void)
-{
-    return flipOverAfterCrashMode;
-}
 bool isHoovReverseMode(void) {
     return hoovReverseMode;
 }
