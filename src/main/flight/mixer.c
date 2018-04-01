@@ -661,6 +661,21 @@ static void applyMixToMotors(float motorMix[MAX_SUPPORTED_MOTORS])
             motor[0] = disarmMotorOutput + (motorRangeMax * 0.4);
         }
 
+        //This sets the front motor to a set value
+        float percentThro = (rcCommand[THROTTLE]-1000)/1000 ;//Get the stick defelction for throttle amd convert it to a decimal of maximum possible throttle
+
+        pidProfile_t *pidProfile = pidProfilesMutable(0);
+
+        if (percentThro > .25) { //If the thortle is greater than 25 percent
+            motor[0] = disarmMotorOutput + (motorRangeMax * pidProfile->pid[PID_PITCH].P/100); //turn the motor 40%
+        }
+
+        // if (percentThro < .10) { //If the thortle is less than 10 percent
+        //     motor[0] = disarmMotorOutput + (motorRangeMax * 0); //turn the front motor off
+        // }
+
+
+
         motor[i] = motorOutput;
 
         // If we are in flip mode, set hover motor to 100%, disarm the back motors
