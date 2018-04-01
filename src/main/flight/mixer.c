@@ -661,6 +661,16 @@ static void applyMixToMotors(float motorMix[MAX_SUPPORTED_MOTORS])
             motor[0] = disarmMotorOutput + (motorRangeMax * 0.4);
         }
 
+        //My stuff
+        //  float stickDeflectionThroAbs = rcData[THROTTLE] //getRcDeflectionAbs(FD_THRO); //Get the stick defelction for throttle
+        float percentThro = (2000-rcData[THROTTLE])/1000 //Get the stick defelction for throttle amd convert it to a decimal of maximum possible throttle
+
+        if (percentThro > .25) { //If the thortle is greater than 25 percent
+            motor[0] = disarmMotorOutput + (motorRangeMax * 0.25); //turn the motor 25%
+        }
+
+        //end of my stuff
+
         motor[i] = motorOutput;
 
         // If we are in flip mode, set hover motor to 100%, disarm the back motors
